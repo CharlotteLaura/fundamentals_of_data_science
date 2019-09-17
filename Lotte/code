@@ -1,0 +1,53 @@
+import pandas as pd
+import tarfile
+
+# extract jsons file from tar file
+tar = tarfile.open('geotagged_tweets.tar.gz', "r:gz")
+tar.extractall()
+tar.close()
+
+import json
+
+tweets_data = []
+tweets_file = open('geotagged_tweets_20160812-0912.jsons', "r")
+
+for line in tweets_file:
+    try:
+        tweet = json.loads(line)
+        
+        # put coordinates in right format
+        if tweet['coordinates'] is not None:
+            longitude = tweet['coordinates']['coordinates'][0]
+            latitude = tweet['coordinates']['coordinates'][1]
+        else:
+            longitude = ""
+            latitude = ""
+        
+        # put hashtags in right format
+        hashtags = []
+        for hashtag in tweet['entities']['hashtags']:
+            hashtags.append(hashtag['text'])
+        print(hashtags)
+        
+        # save relevant parts of the tweet to a dictionary
+        tweet_relevant = {
+            'created_at':tweet['created_at'],
+            'id_str':tweet['id_str'],
+            'text':tweet['text'],
+            'user_id_str':tweet['user']['id_str'],
+            'lang':tweet['lang'],
+            'longitude': longitude,
+            'latitude':latitude,
+            'hashtags':hashtags,
+        }
+        
+        # print statement for testing
+        print(tweet_relevant)
+        
+        # append tweet to a list
+        tweets_data.append(tweet_relevant)
+    
+    # check for errors
+    except Exception as e:
+        print (e)
+        continue
